@@ -1,0 +1,7 @@
+target/
+.env
+.idea/
+.vscode/
+.claude/
+*.log
+*:Zone.Identifier

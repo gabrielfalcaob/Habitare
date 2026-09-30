@@ -1,0 +1,34 @@
+services:
+  db:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?defina no .env}
+      MYSQL_DATABASE: habitare
+      MYSQL_USER: pw
+      MYSQL_PASSWORD: ${DB_PASSWORD:?defina no .env}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8090:8080"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/habitare?createDatabaseIfNotExist=TRUE"
+      SPRING_DATASOURCE_USERNAME: pw
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:?defina no .env}
+      API_SECURITY_TOKEN_SECRET: ${JWT_SECRET:?defina no .env}
+      APP_ADMIN_PASSWORD: ${ADMIN_PASSWORD:?defina no .env}
+
+volumes:
+  mysql_data:
